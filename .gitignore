@@ -1,0 +1,14 @@
+# Directories
+/node_modules
+/dist
+/.vscode
+/.pytest_cache/
+/api/__pycache__
+/api/utils/__pycache__
+/terraform/.terraform
+/terraform/.terraform.lock.hcl
+/terraform/terraform.tfstate
+/terraform/terraform.tfstate.backup
+/terraform.tfstate
+/tests/__pycache__
+

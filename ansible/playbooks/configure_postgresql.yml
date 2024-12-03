@@ -1,0 +1,41 @@
+---
+- name: Configure PostgreSQL and set up replication
+  hosts: all
+  become: true
+  tasks:
+    - name: Install PostgreSQL
+      apt:
+        name: postgresql
+        state: present
+      when: ansible_os_family == 'Debian'
+
+    - name: Copy PostgreSQL configuration
+      template:
+        src: "{{ playbook_dir }}/../../api/templates/ansible_playbook.j2"
+        dest: /etc/postgresql/14/main/postgresql.conf
+        mode: 0644
+      notify: Restart PostgreSQL
+
+    - name: Copy pg_hba.conf
+      template:
+        src: "{{ playbook_dir }}/../../api/templates/pg_hba.conf.j2"
+        dest: /etc/postgresql/14/main/pg_hba.conf
+        mode: 0644
+      notify: Restart PostgreSQL
+
+    - name: Ensure PostgreSQL is running
+      service:
+        name: postgresql
+        state: started
+        enabled: yes
+
+    - name: Set up replication user (on primary)
+      become_user: postgres
+      command: psql -c "CREATE ROLE replicator WITH REPLICATION PASSWORD 'replicator_password' LOGIN;"
+      when: inventory_hostname == groups['primary'][0]
+
+  handlers:
+    - name: Restart PostgreSQL
+      service:
+        name: postgresql
+        state: restarted

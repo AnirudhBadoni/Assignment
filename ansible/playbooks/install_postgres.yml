@@ -1,0 +1,33 @@
+---
+- name: Install PostgreSQL and configure primary/replica
+  hosts: all
+  become: yes
+  vars:
+    is_primary: "{{ is_primary }}"
+    primary_ip: "{{ primary_ip }}"
+  tasks:
+    - name: Install PostgreSQL
+      apt:
+        name: postgresql
+        state: present
+        update_cache: yes
+
+    - name: Configure PostgreSQL
+      template:
+        src: postgresql.conf.j2
+        dest: /etc/postgresql/14/main/postgresql.conf
+      notify:
+        - Restart PostgreSQL
+
+    - name: Configure replication
+      template:
+        src: pg_hba.conf.j2
+        dest: /etc/postgresql/14/main/pg_hba.conf
+      notify:
+        - Restart PostgreSQL
+
+  handlers:
+    - name: Restart PostgreSQL
+      service:
+        name: postgresql
+        state: restarted

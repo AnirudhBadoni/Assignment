@@ -1,0 +1,25 @@
+# PostgreSQL Configuration File
+# Basic settings
+listen_addresses = '*'                # Allow connections from all addresses
+port = 5432                           # Default PostgreSQL port
+max_connections = {{ max_connections }}  # Maximum number of connections
+shared_buffers = {{ shared_buffers }}    # Memory allocated for shared buffers
+
+# WAL settings for replication
+wal_level = replica                   # Set WAL level to support replication
+archive_mode = on                     # Enable WAL archiving
+archive_command = 'test ! -f /var/lib/postgresql/wal_archive/%f && cp %p /var/lib/postgresql/wal_archive/%f'
+max_wal_senders = 10                  # Maximum number of WAL sender processes
+wal_keep_size = 64                    # Size of WAL files to keep for replication
+synchronous_commit = local            # Commit behavior
+
+# Replication settings for primary
+{% if is_primary %}
+synchronous_standby_names = '*'
+{% endif %}
+
+# Logging settings
+logging_collector = on
+log_directory = '/var/log/postgresql'
+log_filename = 'postgresql.log'
+log_statement = 'none'
